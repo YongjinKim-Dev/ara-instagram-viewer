@@ -195,7 +195,12 @@ function Gallery({ posts, onPostClick }) {
     <div className="gallery">
       {posts.map((post) => (
         <div key={post.id} className="gallery-item" onClick={() => onPostClick(post.id)}>
-          <img className="gallery-image" src={post.image} alt={post.caption || 'Post'} />
+          <img
+            className="gallery-image"
+            src={post.image}
+            alt={post.caption || 'Post'}
+            style={{ objectPosition: `center ${post.cropY ?? 50}%` }}
+          />
         </div>
       ))}
     </div>
@@ -295,12 +300,86 @@ function StoryViewer({ story, profile, onClose }) {
   )
 }
 
+// Crop Adjust Modal 컴포넌트 (썸네일 표시 영역 조절)
+function CropAdjustModal({ post, onSave, onClose }) {
+  const [cropY, setCropY] = useState(post.cropY ?? 50)
+  const containerRef = useRef(null)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleMouseDown = () => setIsDragging(true)
+  const handleMouseUp = () => setIsDragging(false)
+
+  const handleMouseMove = (e) => {
+    if (!isDragging || !containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const y = e.clientY - rect.top
+    const percent = Math.max(0, Math.min(100, (y / rect.height) * 100))
+    setCropY(percent)
+  }
+
+  const handleTouchMove = (e) => {
+    if (!containerRef.current) return
+    const rect = containerRef.current.getBoundingClientRect()
+    const touch = e.touches[0]
+    const y = touch.clientY - rect.top
+    const percent = Math.max(0, Math.min(100, (y / rect.height) * 100))
+    setCropY(percent)
+  }
+
+  return (
+    <div className="crop-adjust-modal">
+      <div className="crop-adjust-header">
+        <button className="crop-adjust-cancel" onClick={onClose}>취소</button>
+        <span className="crop-adjust-title">썸네일 위치 조절</span>
+        <button className="crop-adjust-save" onClick={() => onSave(cropY)}>완료</button>
+      </div>
+
+      <div className="crop-adjust-preview">
+        <div className="crop-adjust-thumbnail">
+          <img
+            src={post.image}
+            alt="Preview"
+            style={{ objectPosition: `center ${cropY}%` }}
+          />
+        </div>
+        <span className="crop-adjust-label">미리보기</span>
+      </div>
+
+      <div
+        className="crop-adjust-container"
+        ref={containerRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onTouchStart={() => setIsDragging(true)}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={() => setIsDragging(false)}
+      >
+        <img src={post.image} alt="Crop" draggable={false} />
+        <div
+          className="crop-adjust-indicator"
+          style={{ top: `${cropY}%` }}
+        >
+          <div className="crop-adjust-line" />
+          <div className="crop-adjust-handle" />
+        </div>
+      </div>
+
+      <div className="crop-adjust-hint">
+        이미지를 드래그해서 썸네일에 표시될 중심점을 선택하세요
+      </div>
+    </div>
+  )
+}
+
 // Post Detail 컴포넌트 (인스타그램 스타일)
-function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle }) {
+function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCropUpdate }) {
   const [liked, setLiked] = useState(post.liked || false)
   const [saved, setSaved] = useState(false)
   const [showFullImage, setShowFullImage] = useState(false)
   const [showImagePicker, setShowImagePicker] = useState(false)
+  const [showCropAdjust, setShowCropAdjust] = useState(false)
   const imageInputRef = useRef(null)
 
   // post id 기반 고정 랜덤 좋아요 수 (5000~7000)
@@ -361,7 +440,12 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle }) {
         </div>
 
         <div className="post-image-container" onClick={() => setShowFullImage(true)}>
-          <img className="post-image" src={post.image} alt="Post" />
+          <img
+            className="post-image"
+            src={post.image}
+            alt="Post"
+            style={{ objectPosition: `center ${post.cropY ?? 50}%` }}
+          />
         </div>
 
         {showFullImage && (
@@ -385,7 +469,7 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle }) {
                 <Icons.Heart />
               )}
             </button>
-            <button className="post-action">
+            <button className="post-action" onClick={() => setShowCropAdjust(true)}>
               <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
                 <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"/>
               </svg>
@@ -450,6 +534,17 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle }) {
             </div>
           </div>
         </div>
+      )}
+
+      {showCropAdjust && (
+        <CropAdjustModal
+          post={post}
+          onSave={(cropY) => {
+            onCropUpdate(post.id, cropY)
+            setShowCropAdjust(false)
+          }}
+          onClose={() => setShowCropAdjust(false)}
+        />
       )}
     </div>
   )
@@ -733,6 +828,22 @@ function App() {
     }
   }
 
+  const handleCropUpdate = async (postId, cropY) => {
+    try {
+      if (window.electronAPI?.updateCropPosition) {
+        const result = await window.electronAPI.updateCropPosition(postId, cropY)
+        if (result.success) {
+          fetchPosts()
+        }
+      } else {
+        // 웹 환경에서는 로컬 상태만 업데이트
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, cropY } : p))
+      }
+    } catch (e) {
+      console.error('Failed to update crop position:', e)
+    }
+  }
+
   // 탭에 따른 게시글 필터링
   const displayedPosts = activeTab === 'posts'
     ? posts.filter(p => p.liked)  // 이미지탭: 좋아요한 게시글만
@@ -776,6 +887,7 @@ function App() {
           onClose={() => setSelectedPostId(null)}
           onImageUpdate={handleImageUpdate}
           onLikeToggle={handleLikeToggle}
+          onCropUpdate={handleCropUpdate}
         />
       )}
 
