@@ -46,8 +46,8 @@ app.on('window-all-closed', () => {
   }
 })
 
-// 이미지 저장 IPC 핸들러
-ipcMain.handle('save-post-image', async (event, postId, imageData) => {
+// 이미지 저장 IPC 핸들러 (mode: 'replace' | 'add')
+ipcMain.handle('save-post-image', async (event, postId, imageData, mode = 'replace') => {
   try {
     const postsDir = path.join(__dirname, 'public', 'posts')
     const postsJsonPath = path.join(postsDir, 'posts.json')
@@ -65,26 +65,41 @@ ipcMain.handle('save-post-image', async (event, postId, imageData) => {
     const base64Data = imageData.replace(/^data:image\/\w+;base64,/, '')
     const imageBuffer = Buffer.from(base64Data, 'base64')
 
-    // 기존 이미지 삭제 (있으면)
-    const existingImagePath = postsJson[postIndex].image
-    if (existingImagePath && existingImagePath.startsWith('/posts/')) {
-      const oldPath = path.join(__dirname, 'public', existingImagePath)
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath)
-      }
-    }
-
-    // 새 파일명으로 저장 (캐시 무효화)
+    // 새 파일명으로 저장
     const fileName = `${postId}_${Date.now()}.png`
     const fullPath = path.join(postsDir, fileName)
     fs.writeFileSync(fullPath, imageBuffer)
     const newImagePath = `/posts/${fileName}`
 
-    // posts.json 업데이트
-    postsJson[postIndex].image = newImagePath
+    const post = postsJson[postIndex]
+
+    // images 배열로 마이그레이션 (하위호환)
+    if (!post.images) {
+      post.images = post.image ? [post.image] : []
+    }
+
+    if (mode === 'replace') {
+      // 기존 모든 이미지 삭제
+      for (const imgPath of post.images) {
+        if (imgPath && imgPath.startsWith('/posts/')) {
+          const oldPath = path.join(__dirname, 'public', imgPath)
+          if (fs.existsSync(oldPath)) {
+            fs.unlinkSync(oldPath)
+          }
+        }
+      }
+      post.images = [newImagePath]
+    } else if (mode === 'add') {
+      // 이미지 추가
+      post.images.push(newImagePath)
+    }
+
+    // 하위호환: image 필드도 첫 번째 이미지로 유지
+    post.image = post.images[0] || null
+
     fs.writeFileSync(postsJsonPath, JSON.stringify(postsJson, null, 2))
 
-    return { success: true, imagePath: newImagePath }
+    return { success: true, imagePath: newImagePath, images: post.images }
   } catch (e) {
     console.error('Failed to save image:', e)
     return { success: false, error: e.message }
@@ -116,7 +131,7 @@ ipcMain.handle('toggle-like', async (event, postId) => {
 })
 
 // 크롭 위치 업데이트 IPC 핸들러
-ipcMain.handle('update-crop-position', async (event, postId, cropY) => {
+ipcMain.handle('update-crop-position', async (event, postId, cropY, imageIndex = 0) => {
   try {
     const postsDir = path.join(__dirname, 'public', 'posts')
     const postsJsonPath = path.join(postsDir, 'posts.json')
@@ -128,11 +143,28 @@ ipcMain.handle('update-crop-position', async (event, postId, cropY) => {
       return { success: false, error: 'Post not found' }
     }
 
-    // cropY 저장 (0~100 퍼센트)
-    postsJson[postIndex].cropY = cropY
+    const post = postsJson[postIndex]
+    const images = post.images || (post.image ? [post.image] : [])
+
+    // cropYs 배열 초기화 (하위호환)
+    if (!post.cropYs) {
+      post.cropYs = images.map(() => post.cropY ?? 50)
+    }
+
+    // 배열 길이 맞추기
+    while (post.cropYs.length < images.length) {
+      post.cropYs.push(50)
+    }
+
+    // 해당 이미지의 cropY 업데이트
+    post.cropYs[imageIndex] = cropY
+
+    // 하위호환: cropY는 첫 번째 이미지 기준
+    post.cropY = post.cropYs[0]
+
     fs.writeFileSync(postsJsonPath, JSON.stringify(postsJson, null, 2))
 
-    return { success: true, cropY: postsJson[postIndex].cropY }
+    return { success: true, cropYs: post.cropYs }
   } catch (e) {
     console.error('Failed to update crop position:', e)
     return { success: false, error: e.message }
@@ -152,12 +184,16 @@ ipcMain.handle('delete-post', async (event, postId) => {
       return { success: false, error: 'Post not found' }
     }
 
-    // 이미지 파일 삭제
-    const imagePath = postsJson[postIndex].image
-    if (imagePath && imagePath.startsWith('/posts/')) {
-      const fullPath = path.join(__dirname, 'public', imagePath)
-      if (fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath)
+    const post = postsJson[postIndex]
+
+    // 모든 이미지 파일 삭제 (images 배열 + 단일 image)
+    const imagesToDelete = post.images || (post.image ? [post.image] : [])
+    for (const imgPath of imagesToDelete) {
+      if (imgPath && imgPath.startsWith('/posts/')) {
+        const fullPath = path.join(__dirname, 'public', imgPath)
+        if (fs.existsSync(fullPath)) {
+          fs.unlinkSync(fullPath)
+        }
       }
     }
 

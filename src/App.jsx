@@ -193,16 +193,23 @@ function TabBar({ activeTab, onTabChange }) {
 function Gallery({ posts, onPostClick }) {
   return (
     <div className="gallery">
-      {posts.map((post) => (
-        <div key={post.id} className="gallery-item" onClick={() => onPostClick(post.id)}>
-          <img
-            className="gallery-image"
-            src={post.image}
-            alt={post.caption || 'Post'}
-            style={{ objectPosition: `center ${post.cropY ?? 50}%` }}
-          />
-        </div>
-      ))}
+      {posts.map((post) => {
+        // 첫 번째 이미지 사용 (하위호환)
+        const firstImage = post.images?.[0] || post.image
+        const hasMultiple = (post.images?.length || 0) > 1
+        // 첫 번째 이미지의 cropY (하위호환)
+        const firstCropY = post.cropYs?.[0] ?? post.cropY ?? 50
+        return (
+          <div key={post.id} className="gallery-item" onClick={() => onPostClick(post.id)}>
+            <img
+              className="gallery-image"
+              src={firstImage}
+              alt={post.caption || 'Post'}
+              style={{ objectPosition: `center ${firstCropY}%` }}
+            />
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -301,8 +308,8 @@ function StoryViewer({ story, profile, onClose }) {
 }
 
 // Crop Adjust Modal 컴포넌트 (썸네일 표시 영역 조절)
-function CropAdjustModal({ post, onSave, onClose }) {
-  const [cropY, setCropY] = useState(post.cropY ?? 50)
+function CropAdjustModal({ imageSrc, initialCropY = 50, onSave, onClose }) {
+  const [cropY, setCropY] = useState(initialCropY)
   const containerRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -337,7 +344,7 @@ function CropAdjustModal({ post, onSave, onClose }) {
       <div className="crop-adjust-preview">
         <div className="crop-adjust-thumbnail">
           <img
-            src={post.image}
+            src={imageSrc}
             alt="Preview"
             style={{ objectPosition: `center ${cropY}%` }}
           />
@@ -356,7 +363,7 @@ function CropAdjustModal({ post, onSave, onClose }) {
         onTouchMove={handleTouchMove}
         onTouchEnd={() => setIsDragging(false)}
       >
-        <img src={post.image} alt="Crop" draggable={false} />
+        <img src={imageSrc} alt="Crop" draggable={false} />
         <div
           className="crop-adjust-indicator"
           style={{ top: `${cropY}%` }}
@@ -380,7 +387,16 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
   const [showImagePicker, setShowImagePicker] = useState(false)
   const [showCropAdjust, setShowCropAdjust] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [pendingImageData, setPendingImageData] = useState(null)
+  const [showModeSelect, setShowModeSelect] = useState(false)
   const imageInputRef = useRef(null)
+
+  // images 배열 (하위호환)
+  const images = post.images || (post.image ? [post.image] : [])
+
+  // cropYs 배열 (하위호환)
+  const cropYs = post.cropYs || images.map(() => post.cropY ?? 50)
 
   // post id 기반 고정 랜덤 좋아요 수 (5000~7000)
   const getRandomLikes = (postId) => {
@@ -409,11 +425,30 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
     if (file) {
       const reader = new FileReader()
       reader.onloadend = () => {
-        onImageUpdate(post.id, reader.result)
+        setPendingImageData(reader.result)
         setShowImagePicker(false)
+        setShowModeSelect(true)
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const handleModeSelect = (mode) => {
+    if (pendingImageData) {
+      onImageUpdate(post.id, pendingImageData, mode)
+      setPendingImageData(null)
+    }
+    setShowModeSelect(false)
+  }
+
+  const handlePrevImage = (e) => {
+    e.stopPropagation()
+    setCurrentImageIndex(prev => Math.max(0, prev - 1))
+  }
+
+  const handleNextImage = (e) => {
+    e.stopPropagation()
+    setCurrentImageIndex(prev => Math.min(images.length - 1, prev + 1))
   }
 
   return (
@@ -439,18 +474,47 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
           </button>
         </div>
 
-        <div className="post-image-container" onClick={() => setShowFullImage(true)}>
-          <img
-            className="post-image"
-            src={post.image}
-            alt="Post"
-            style={{ objectPosition: `center ${post.cropY ?? 50}%` }}
-          />
+        <div className="post-image-container">
+          <div className="carousel-wrapper" onClick={() => setShowFullImage(true)}>
+            <img
+              className="post-image"
+              src={images[currentImageIndex]}
+              alt="Post"
+              style={{ objectPosition: `center ${cropYs[currentImageIndex] ?? 50}%` }}
+            />
+          </div>
+          {images.length > 1 && (
+            <>
+              {currentImageIndex > 0 && (
+                <button className="carousel-btn carousel-prev" onClick={handlePrevImage}>
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                  </svg>
+                </button>
+              )}
+              {currentImageIndex < images.length - 1 && (
+                <button className="carousel-btn carousel-next" onClick={handleNextImage}>
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                  </svg>
+                </button>
+              )}
+              <div className="carousel-indicators">
+                {images.map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`carousel-dot ${idx === currentImageIndex ? 'active' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         {showFullImage && (
           <div className="full-image-overlay" onClick={() => setShowFullImage(false)}>
-            <img className="full-image" src={post.image} alt="Post" />
+            <img className="full-image" src={images[currentImageIndex]} alt="Post" />
           </div>
         )}
 
@@ -532,9 +596,10 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
 
       {showCropAdjust && (
         <CropAdjustModal
-          post={post}
+          imageSrc={images[currentImageIndex]}
+          initialCropY={cropYs[currentImageIndex]}
           onSave={(cropY) => {
-            onCropUpdate(post.id, cropY)
+            onCropUpdate(post.id, cropY, currentImageIndex)
             setShowCropAdjust(false)
           }}
           onClose={() => setShowCropAdjust(false)}
@@ -560,6 +625,27 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
                 setShowDeleteConfirm(false)
               }}>
                 삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showModeSelect && (
+        <div className="mode-select-modal" onClick={() => { setShowModeSelect(false); setPendingImageData(null); }}>
+          <div className="mode-select-content" onClick={(e) => e.stopPropagation()}>
+            <div className="mode-select-header">
+              <span>이미지 추가 방식</span>
+            </div>
+            <div className="mode-select-body">
+              <p>선택한 이미지를 어떻게 추가할까요?</p>
+            </div>
+            <div className="mode-select-actions">
+              <button className="mode-select-replace" onClick={() => handleModeSelect('replace')}>
+                전체 교체
+              </button>
+              <button className="mode-select-add" onClick={() => handleModeSelect('add')}>
+                추가
               </button>
             </div>
           </div>
@@ -813,18 +899,26 @@ function App() {
     localStorage.setItem('ara-profile', JSON.stringify(newProfile))
   }
 
-  const handleImageUpdate = async (postId, newImageData) => {
+  const handleImageUpdate = async (postId, newImageData, mode = 'replace') => {
     try {
       // Electron의 IPC를 통해 이미지 저장
       if (window.electronAPI?.savePostImage) {
-        const result = await window.electronAPI.savePostImage(postId, newImageData)
+        const result = await window.electronAPI.savePostImage(postId, newImageData, mode)
         if (result.success) {
           // posts 새로고침
           fetchPosts()
         }
       } else {
         // 웹 환경에서는 로컬 상태만 업데이트
-        setPosts(prev => prev.map(p => p.id === postId ? { ...p, image: newImageData } : p))
+        setPosts(prev => prev.map(p => {
+          if (p.id !== postId) return p
+          const images = p.images || (p.image ? [p.image] : [])
+          if (mode === 'replace') {
+            return { ...p, images: [newImageData], image: newImageData }
+          } else {
+            return { ...p, images: [...images, newImageData], image: images[0] || newImageData }
+          }
+        }))
       }
     } catch (e) {
       console.error('Failed to update image:', e)
@@ -847,16 +941,23 @@ function App() {
     }
   }
 
-  const handleCropUpdate = async (postId, cropY) => {
+  const handleCropUpdate = async (postId, cropY, imageIndex = 0) => {
     try {
       if (window.electronAPI?.updateCropPosition) {
-        const result = await window.electronAPI.updateCropPosition(postId, cropY)
+        const result = await window.electronAPI.updateCropPosition(postId, cropY, imageIndex)
         if (result.success) {
           fetchPosts()
         }
       } else {
         // 웹 환경에서는 로컬 상태만 업데이트
-        setPosts(prev => prev.map(p => p.id === postId ? { ...p, cropY } : p))
+        setPosts(prev => prev.map(p => {
+          if (p.id !== postId) return p
+          const images = p.images || (p.image ? [p.image] : [])
+          const cropYs = p.cropYs || images.map(() => p.cropY ?? 50)
+          const newCropYs = [...cropYs]
+          newCropYs[imageIndex] = cropY
+          return { ...p, cropYs: newCropYs, cropY: newCropYs[0] }
+        }))
       }
     } catch (e) {
       console.error('Failed to update crop position:', e)
