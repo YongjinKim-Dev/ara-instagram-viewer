@@ -90,3 +90,27 @@ ipcMain.handle('save-post-image', async (event, postId, imageData) => {
     return { success: false, error: e.message }
   }
 })
+
+// 좋아요 토글 IPC 핸들러
+ipcMain.handle('toggle-like', async (event, postId) => {
+  try {
+    const postsDir = path.join(__dirname, 'public', 'posts')
+    const postsJsonPath = path.join(postsDir, 'posts.json')
+
+    const postsJson = JSON.parse(fs.readFileSync(postsJsonPath, 'utf8'))
+
+    const postIndex = postsJson.findIndex(p => p.id === postId)
+    if (postIndex === -1) {
+      return { success: false, error: 'Post not found' }
+    }
+
+    // liked 토글
+    postsJson[postIndex].liked = !postsJson[postIndex].liked
+    fs.writeFileSync(postsJsonPath, JSON.stringify(postsJson, null, 2))
+
+    return { success: true, liked: postsJson[postIndex].liked }
+  } catch (e) {
+    console.error('Failed to toggle like:', e)
+    return { success: false, error: e.message }
+  }
+})
