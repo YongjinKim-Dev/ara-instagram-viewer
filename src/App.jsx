@@ -179,7 +179,7 @@ function ProfileHeader({ profile }) {
 function TabBar({ activeTab, onTabChange }) {
   return (
     <div className="tab-bar">
-      <div className={`tab ${activeTab === 'grid' ? 'active' : ''}`} onClick={() => onTabChange('grid')}>
+      <div className={`tab ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => onTabChange('posts')}>
         <Icons.Grid />
       </div>
       <div className={`tab ${activeTab === 'reels' ? 'active' : ''}`} onClick={() => onTabChange('reels')}>
@@ -193,8 +193,8 @@ function TabBar({ activeTab, onTabChange }) {
 function Gallery({ posts, onPostClick }) {
   return (
     <div className="gallery">
-      {posts.map((post, index) => (
-        <div key={post.id} className="gallery-item" onClick={() => onPostClick(index)}>
+      {posts.map((post) => (
+        <div key={post.id} className="gallery-item" onClick={() => onPostClick(post.id)}>
           <img className="gallery-image" src={post.image} alt={post.caption || 'Post'} />
         </div>
       ))}
@@ -296,8 +296,8 @@ function StoryViewer({ story, profile, onClose }) {
 }
 
 // Post Detail 컴포넌트 (인스타그램 스타일)
-function PostDetail({ post, profile, onClose, onImageUpdate }) {
-  const [liked, setLiked] = useState(false)
+function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle }) {
+  const [liked, setLiked] = useState(post.liked || false)
   const [saved, setSaved] = useState(false)
   const [showFullImage, setShowFullImage] = useState(false)
   const [showImagePicker, setShowImagePicker] = useState(false)
@@ -372,7 +372,11 @@ function PostDetail({ post, profile, onClose, onImageUpdate }) {
 
         <div className="post-actions">
           <div className="post-actions-left">
-            <button className={`post-action ${liked ? 'liked' : ''}`} onClick={() => setLiked(!liked)}>
+            <button className={`post-action ${liked ? 'liked' : ''}`} onClick={() => {
+              const newLiked = !liked
+              setLiked(newLiked)
+              onLikeToggle(post.id)
+            }}>
               {liked ? (
                 <svg fill="#ff3040" viewBox="0 0 24 24" width="24" height="24">
                   <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938Z"/>
@@ -657,9 +661,9 @@ function Settings({ profile, onClose, onProfileUpdate }) {
 // Main App
 function App() {
   const [posts, setPosts] = useState([])
-  const [activeTab, setActiveTab] = useState('grid')
+  const [activeTab, setActiveTab] = useState('reels')  // 기본 탭을 릴스로
   const [selectedHighlight, setSelectedHighlight] = useState(null)
-  const [selectedPostIndex, setSelectedPostIndex] = useState(null)
+  const [selectedPostId, setSelectedPostId] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem('ara-profile')
@@ -713,6 +717,27 @@ function App() {
     }
   }
 
+  const handleLikeToggle = async (postId) => {
+    try {
+      if (window.electronAPI?.toggleLike) {
+        const result = await window.electronAPI.toggleLike(postId)
+        if (result.success) {
+          fetchPosts()
+        }
+      } else {
+        // 웹 환경에서는 로컬 상태만 업데이트
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, liked: !p.liked } : p))
+      }
+    } catch (e) {
+      console.error('Failed to toggle like:', e)
+    }
+  }
+
+  // 탭에 따른 게시글 필터링
+  const displayedPosts = activeTab === 'posts'
+    ? posts.filter(p => p.liked)  // 이미지탭: 좋아요한 게시글만
+    : posts                        // 릴스탭: 전체 게시글
+
   return (
     <div className="app">
       <Header
@@ -730,8 +755,8 @@ function App() {
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
 
       <Gallery
-        posts={posts}
-        onPostClick={setSelectedPostIndex}
+        posts={displayedPosts}
+        onPostClick={(postId) => setSelectedPostId(postId)}
       />
 
       <BottomNav />
@@ -744,12 +769,13 @@ function App() {
         />
       )}
 
-      {selectedPostIndex !== null && posts[selectedPostIndex] && (
+      {selectedPostId && posts.find(p => p.id === selectedPostId) && (
         <PostDetail
-          post={posts[selectedPostIndex]}
+          post={posts.find(p => p.id === selectedPostId)}
           profile={profile}
-          onClose={() => setSelectedPostIndex(null)}
+          onClose={() => setSelectedPostId(null)}
           onImageUpdate={handleImageUpdate}
+          onLikeToggle={handleLikeToggle}
         />
       )}
 
