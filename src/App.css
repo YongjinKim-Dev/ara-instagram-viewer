@@ -1093,3 +1093,73 @@ body {
   color: #0095f6;
   font-weight: 600;
 }
+
+/* Delete Confirm Modal */
+.delete-confirm-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-confirm-content {
+  background: #262626;
+  border-radius: 16px;
+  width: 280px;
+  overflow: hidden;
+}
+
+.delete-confirm-header {
+  padding: 20px 16px 12px;
+  text-align: center;
+}
+
+.delete-confirm-header span {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.delete-confirm-body {
+  padding: 0 16px 20px;
+  text-align: center;
+}
+
+.delete-confirm-body p {
+  color: #a8a8a8;
+  font-size: 14px;
+  margin: 0;
+}
+
+.delete-confirm-warning {
+  margin-top: 8px !important;
+  font-size: 13px !important;
+  color: #666 !important;
+}
+
+.delete-confirm-actions {
+  display: flex;
+  border-top: 1px solid #363636;
+}
+
+.delete-confirm-actions button {
+  flex: 1;
+  padding: 14px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.delete-confirm-cancel {
+  color: #fff;
+  border-right: 1px solid #363636 !important;
+}
+
+.delete-confirm-delete {
+  color: #ed4956;
+}
