@@ -374,12 +374,12 @@ function CropAdjustModal({ post, onSave, onClose }) {
 }
 
 // Post Detail 컴포넌트 (인스타그램 스타일)
-function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCropUpdate }) {
+function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCropUpdate, onDelete }) {
   const [liked, setLiked] = useState(post.liked || false)
-  const [saved, setSaved] = useState(false)
   const [showFullImage, setShowFullImage] = useState(false)
   const [showImagePicker, setShowImagePicker] = useState(false)
   const [showCropAdjust, setShowCropAdjust] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const imageInputRef = useRef(null)
 
   // post id 기반 고정 랜덤 좋아요 수 (5000~7000)
@@ -488,16 +488,10 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
               style={{ display: 'none' }}
             />
           </div>
-          <button className={`post-action ${saved ? 'saved' : ''}`} onClick={() => setSaved(!saved)}>
-            {saved ? (
-              <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-                <path d="M20 22a.999.999 0 0 1-.687-.273L12 14.815l-7.313 6.912A1 1 0 0 1 3 21V3a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1Z"/>
-              </svg>
-            ) : (
-              <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-                <polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-              </svg>
-            )}
+          <button className="post-action" onClick={() => setShowDeleteConfirm(true)}>
+            <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+              <polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+            </svg>
           </button>
         </div>
 
@@ -545,6 +539,31 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
           }}
           onClose={() => setShowCropAdjust(false)}
         />
+      )}
+
+      {showDeleteConfirm && (
+        <div className="delete-confirm-modal" onClick={() => setShowDeleteConfirm(false)}>
+          <div className="delete-confirm-content" onClick={(e) => e.stopPropagation()}>
+            <div className="delete-confirm-header">
+              <span>게시글 삭제</span>
+            </div>
+            <div className="delete-confirm-body">
+              <p>이 게시글을 삭제할까요?</p>
+              <p className="delete-confirm-warning">삭제된 게시글은 복구할 수 없어요.</p>
+            </div>
+            <div className="delete-confirm-actions">
+              <button className="delete-confirm-cancel" onClick={() => setShowDeleteConfirm(false)}>
+                취소
+              </button>
+              <button className="delete-confirm-delete" onClick={() => {
+                onDelete(post.id)
+                setShowDeleteConfirm(false)
+              }}>
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
@@ -844,6 +863,24 @@ function App() {
     }
   }
 
+  const handleDeletePost = async (postId) => {
+    try {
+      if (window.electronAPI?.deletePost) {
+        const result = await window.electronAPI.deletePost(postId)
+        if (result.success) {
+          setSelectedPostId(null)
+          fetchPosts()
+        }
+      } else {
+        // 웹 환경에서는 로컬 상태만 업데이트
+        setPosts(prev => prev.filter(p => p.id !== postId))
+        setSelectedPostId(null)
+      }
+    } catch (e) {
+      console.error('Failed to delete post:', e)
+    }
+  }
+
   // 탭에 따른 게시글 필터링
   const displayedPosts = activeTab === 'posts'
     ? posts.filter(p => p.liked)  // 이미지탭: 좋아요한 게시글만
@@ -888,6 +925,7 @@ function App() {
           onImageUpdate={handleImageUpdate}
           onLikeToggle={handleLikeToggle}
           onCropUpdate={handleCropUpdate}
+          onDelete={handleDeletePost}
         />
       )}
 
