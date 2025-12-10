@@ -1018,3 +1018,78 @@ body {
   color: #666;
   font-size: 14px;
 }
+
+/* Image Picker Modal */
+.image-picker-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-picker-content {
+  background: #262626;
+  border-radius: 16px;
+  width: 280px;
+  overflow: hidden;
+}
+
+.image-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid #363636;
+}
+
+.image-picker-header span {
+  font-size: 16px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.image-picker-header button {
+  background: none;
+  border: none;
+  color: #a8a8a8;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.image-picker-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.image-picker-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.image-picker-btn:hover {
+  background: #363636;
+}
+
+.image-picker-btn svg {
+  color: #0095f6;
+}
+
+.image-picker-btn span {
+  font-size: 14px;
+  color: #0095f6;
+  font-weight: 600;
+}
