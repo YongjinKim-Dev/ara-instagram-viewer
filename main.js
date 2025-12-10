@@ -114,3 +114,60 @@ ipcMain.handle('toggle-like', async (event, postId) => {
     return { success: false, error: e.message }
   }
 })
+
+// 크롭 위치 업데이트 IPC 핸들러
+ipcMain.handle('update-crop-position', async (event, postId, cropY) => {
+  try {
+    const postsDir = path.join(__dirname, 'public', 'posts')
+    const postsJsonPath = path.join(postsDir, 'posts.json')
+
+    const postsJson = JSON.parse(fs.readFileSync(postsJsonPath, 'utf8'))
+
+    const postIndex = postsJson.findIndex(p => p.id === postId)
+    if (postIndex === -1) {
+      return { success: false, error: 'Post not found' }
+    }
+
+    // cropY 저장 (0~100 퍼센트)
+    postsJson[postIndex].cropY = cropY
+    fs.writeFileSync(postsJsonPath, JSON.stringify(postsJson, null, 2))
+
+    return { success: true, cropY: postsJson[postIndex].cropY }
+  } catch (e) {
+    console.error('Failed to update crop position:', e)
+    return { success: false, error: e.message }
+  }
+})
+
+// 게시글 삭제 IPC 핸들러
+ipcMain.handle('delete-post', async (event, postId) => {
+  try {
+    const postsDir = path.join(__dirname, 'public', 'posts')
+    const postsJsonPath = path.join(postsDir, 'posts.json')
+
+    const postsJson = JSON.parse(fs.readFileSync(postsJsonPath, 'utf8'))
+
+    const postIndex = postsJson.findIndex(p => p.id === postId)
+    if (postIndex === -1) {
+      return { success: false, error: 'Post not found' }
+    }
+
+    // 이미지 파일 삭제
+    const imagePath = postsJson[postIndex].image
+    if (imagePath && imagePath.startsWith('/posts/')) {
+      const fullPath = path.join(__dirname, 'public', imagePath)
+      if (fs.existsSync(fullPath)) {
+        fs.unlinkSync(fullPath)
+      }
+    }
+
+    // posts.json에서 제거
+    postsJson.splice(postIndex, 1)
+    fs.writeFileSync(postsJsonPath, JSON.stringify(postsJson, null, 2))
+
+    return { success: true }
+  } catch (e) {
+    console.error('Failed to delete post:', e)
+    return { success: false, error: e.message }
+  }
+})
