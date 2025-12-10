@@ -1283,3 +1283,146 @@ body {
 .delete-confirm-delete {
   color: #ed4956;
 }
+
+/* Carousel Styles */
+.carousel-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-btn:hover {
+  background: #fff;
+}
+
+.carousel-prev {
+  left: 8px;
+}
+
+.carousel-next {
+  right: 8px;
+}
+
+.carousel-indicators {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.carousel-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.carousel-dot.active {
+  background: #0095f6;
+}
+
+.carousel-dot:hover {
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* Gallery Multi-Image Indicator */
+.gallery-multi-indicator {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mode Select Modal */
+.mode-select-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mode-select-content {
+  background: #262626;
+  border-radius: 16px;
+  width: 280px;
+  overflow: hidden;
+}
+
+.mode-select-header {
+  padding: 20px 16px 12px;
+  text-align: center;
+}
+
+.mode-select-header span {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.mode-select-body {
+  padding: 0 16px 20px;
+  text-align: center;
+}
+
+.mode-select-body p {
+  color: #a8a8a8;
+  font-size: 14px;
+  margin: 0;
+}
+
+.mode-select-actions {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid #363636;
+}
+
+.mode-select-actions button {
+  padding: 14px;
+  border: none;
+  background: none;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border-bottom: 1px solid #363636;
+}
+
+.mode-select-actions button:last-child {
+  border-bottom: none;
+}
+
+.mode-select-replace {
+  color: #ed4956;
+}
+
+.mode-select-add {
+  color: #0095f6;
+}
