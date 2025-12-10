@@ -296,10 +296,12 @@ function StoryViewer({ story, profile, onClose }) {
 }
 
 // Post Detail 컴포넌트 (인스타그램 스타일)
-function PostDetail({ post, profile, onClose }) {
+function PostDetail({ post, profile, onClose, onImageUpdate }) {
   const [liked, setLiked] = useState(false)
   const [saved, setSaved] = useState(false)
   const [showFullImage, setShowFullImage] = useState(false)
+  const [showImagePicker, setShowImagePicker] = useState(false)
+  const imageInputRef = useRef(null)
 
   // post id 기반 고정 랜덤 좋아요 수 (5000~7000)
   const getRandomLikes = (postId) => {
@@ -321,6 +323,18 @@ function PostDetail({ post, profile, onClose }) {
     if (diff < 60) return `${diff}분 전`
     if (diff < 1440) return `${Math.floor(diff / 60)}시간 전`
     return `${Math.floor(diff / 1440)}일 전`
+  }
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        onImageUpdate(post.id, reader.result)
+        setShowImagePicker(false)
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
   return (
@@ -372,12 +386,19 @@ function PostDetail({ post, profile, onClose }) {
                 <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"/>
               </svg>
             </button>
-            <button className="post-action">
+            <button className="post-action" onClick={() => setShowImagePicker(true)}>
               <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
                 <line fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" x1="22" x2="9.218" y1="3" y2="10.083"/>
                 <polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"/>
               </svg>
             </button>
+            <input
+              ref={imageInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleImageSelect}
+              style={{ display: 'none' }}
+            />
           </div>
           <button className={`post-action ${saved ? 'saved' : ''}`} onClick={() => setSaved(!saved)}>
             {saved ? (
@@ -405,6 +426,27 @@ function PostDetail({ post, profile, onClose }) {
 
         <div className="post-time">{formatTime(post.createdAt)}</div>
       </div>
+
+      {showImagePicker && (
+        <div className="image-picker-modal" onClick={() => setShowImagePicker(false)}>
+          <div className="image-picker-content" onClick={(e) => e.stopPropagation()}>
+            <div className="image-picker-header">
+              <span>이미지 변경</span>
+              <button onClick={() => setShowImagePicker(false)}>
+                <Icons.Close />
+              </button>
+            </div>
+            <div className="image-picker-body">
+              <button className="image-picker-btn" onClick={() => imageInputRef.current?.click()}>
+                <svg fill="currentColor" viewBox="0 0 24 24" width="48" height="48">
+                  <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-8h-5zM5 19l3-4 2 3 3-4 4 5H5z"/>
+                </svg>
+                <span>사진 선택</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -653,6 +695,24 @@ function App() {
     localStorage.setItem('ara-profile', JSON.stringify(newProfile))
   }
 
+  const handleImageUpdate = async (postId, newImageData) => {
+    try {
+      // Electron의 IPC를 통해 이미지 저장
+      if (window.electronAPI?.savePostImage) {
+        const result = await window.electronAPI.savePostImage(postId, newImageData)
+        if (result.success) {
+          // posts 새로고침
+          fetchPosts()
+        }
+      } else {
+        // 웹 환경에서는 로컬 상태만 업데이트
+        setPosts(prev => prev.map(p => p.id === postId ? { ...p, image: newImageData } : p))
+      }
+    } catch (e) {
+      console.error('Failed to update image:', e)
+    }
+  }
+
   return (
     <div className="app">
       <Header
@@ -689,6 +749,7 @@ function App() {
           post={posts[selectedPostIndex]}
           profile={profile}
           onClose={() => setSelectedPostIndex(null)}
+          onImageUpdate={handleImageUpdate}
         />
       )}
 
