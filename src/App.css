@@ -546,6 +546,7 @@ body {
 }
 
 .post-image-container {
+  position: relative;
   width: 100%;
   aspect-ratio: 1;
   background: #121212;
@@ -1284,49 +1285,74 @@ body {
   color: #ed4956;
 }
 
-/* Carousel Styles */
-.carousel-wrapper {
+/* Carousel Styles - Scroll Snap */
+.carousel-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   width: 100%;
   height: 100%;
+}
+
+.carousel-scroll-container::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
 }
 
 .carousel-btn {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.85);
   border: none;
   border-radius: 50%;
-  width: 32px;
-  height: 32px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.carousel-btn svg {
+  width: 14px;
+  height: 14px;
+  fill: rgba(115, 115, 115, 1);
 }
 
 .carousel-btn:hover {
-  background: #fff;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+.carousel-btn:hover svg {
+  fill: rgba(80, 80, 80, 1);
 }
 
 .carousel-prev {
-  left: 8px;
+  left: 12px;
 }
 
 .carousel-next {
-  right: 8px;
+  right: 12px;
 }
 
 .carousel-indicators {
-  position: absolute;
-  bottom: 12px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
+  justify-content: center;
   gap: 4px;
-  z-index: 10;
+  padding: 12px 0;
 }
 
 .carousel-dot {

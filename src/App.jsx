@@ -451,16 +451,52 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
     setCurrentImageIndex(prev => Math.min(images.length - 1, prev + 1))
   }
 
+  // 스크롤 스냅 방식 캐러셀
+  const scrollContainerRef = useRef(null)
+
+  // 스크롤 이벤트로 현재 인덱스 추적
+  const handleScroll = () => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    const scrollLeft = container.scrollLeft
+    const width = container.offsetWidth
+    const newIndex = Math.round(scrollLeft / width)
+    if (newIndex !== currentImageIndex && newIndex >= 0 && newIndex < images.length) {
+      setCurrentImageIndex(newIndex)
+    }
+  }
+
+  // 버튼 클릭으로 스크롤
+  const scrollToIndex = (index) => {
+    const container = scrollContainerRef.current
+    if (!container) return
+    container.scrollTo({
+      left: index * container.offsetWidth,
+      behavior: 'smooth'
+    })
+  }
+
+  // 버튼 핸들러 수정
+  const handlePrevImageScroll = (e) => {
+    e.stopPropagation()
+    if (currentImageIndex > 0) scrollToIndex(currentImageIndex - 1)
+  }
+
+  const handleNextImageScroll = (e) => {
+    e.stopPropagation()
+    if (currentImageIndex < images.length - 1) scrollToIndex(currentImageIndex + 1)
+  }
+
   return (
     <div className="post-detail">
       <div className="post-detail-header">
         <button className="post-back" onClick={onClose}>
           <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-            <path d="M21 11H6.414l5.293-5.293-1.414-1.414L2.586 12l7.707 7.707 1.414-1.414L6.414 13H21v-2z"/>
+            <path d="M21 11H6.414l5.293-5.293-1.414-1.414L2.586 12l7.707 7.707 1.414-1.414L6.414 13H21v-2z" />
           </svg>
         </button>
         <span className="post-header-title">게시물</span>
-        <div style={{width: 24}} />
+        <div style={{ width: 24 }} />
       </div>
 
       <div className="post-detail-content">
@@ -469,45 +505,44 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
           <span className="post-user-name">{profile.username}</span>
           <button className="post-more">
             <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-              <circle cx="12" cy="12" r="1.5"/><circle cx="6" cy="12" r="1.5"/><circle cx="18" cy="12" r="1.5"/>
+              <circle cx="12" cy="12" r="1.5" /><circle cx="6" cy="12" r="1.5" /><circle cx="18" cy="12" r="1.5" />
             </svg>
           </button>
         </div>
 
         <div className="post-image-container">
-          <div className="carousel-wrapper" onClick={() => setShowFullImage(true)}>
-            <img
-              className="post-image"
-              src={images[currentImageIndex]}
-              alt="Post"
-              style={{ objectPosition: `center ${cropYs[currentImageIndex] ?? 50}%` }}
-            />
+          <div
+            className="carousel-scroll-container"
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+          >
+            {images.map((img, idx) => (
+              <div key={idx} className="carousel-slide" onClick={() => setShowFullImage(true)}>
+                <img
+                  className="post-image"
+                  src={img}
+                  alt={`Post ${idx + 1}`}
+                  style={{ objectPosition: `center ${cropYs[idx] ?? 50}%` }}
+                />
+              </div>
+            ))}
           </div>
           {images.length > 1 && (
             <>
               {currentImageIndex > 0 && (
-                <button className="carousel-btn carousel-prev" onClick={handlePrevImage}>
+                <button className="carousel-btn carousel-prev" onClick={handlePrevImageScroll}>
                   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+                    <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" />
                   </svg>
                 </button>
               )}
               {currentImageIndex < images.length - 1 && (
-                <button className="carousel-btn carousel-next" onClick={handleNextImage}>
+                <button className="carousel-btn carousel-next" onClick={handleNextImageScroll}>
                   <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                    <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z"/>
+                    <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" />
                   </svg>
                 </button>
               )}
-              <div className="carousel-indicators">
-                {images.map((_, idx) => (
-                  <span
-                    key={idx}
-                    className={`carousel-dot ${idx === currentImageIndex ? 'active' : ''}`}
-                    onClick={(e) => { e.stopPropagation(); setCurrentImageIndex(idx); }}
-                  />
-                ))}
-              </div>
             </>
           )}
         </div>
@@ -515,6 +550,18 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
         {showFullImage && (
           <div className="full-image-overlay" onClick={() => setShowFullImage(false)}>
             <img className="full-image" src={images[currentImageIndex]} alt="Post" />
+          </div>
+        )}
+
+        {images.length > 1 && (
+          <div className="carousel-indicators">
+            {images.map((_, idx) => (
+              <span
+                key={idx}
+                className={`carousel-dot ${idx === currentImageIndex ? 'active' : ''}`}
+                onClick={() => scrollToIndex(idx)}
+              />
+            ))}
           </div>
         )}
 
