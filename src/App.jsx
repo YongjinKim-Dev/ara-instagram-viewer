@@ -11,8 +11,8 @@ const PROFILE = {
   following: 1
 }
 
-// 하이라이트 (나중에 동적으로 변경 가능)
-const HIGHLIGHTS = [
+// 하이라이트 기본값
+const DEFAULT_HIGHLIGHTS = [
   { id: 1, title: '일상', avatar: 'https://picsum.photos/seed/h1/100/100', images: [] },
   { id: 2, title: '여행', avatar: 'https://picsum.photos/seed/h2/100/100', images: [] },
   { id: 3, title: '작업', avatar: 'https://picsum.photos/seed/h3/100/100', images: [] },
@@ -22,67 +22,67 @@ const HIGHLIGHTS = [
 const Icons = {
   Home: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <path d="M22 23h-6.001a1 1 0 0 1-1-1v-5.455a2.997 2.997 0 1 0-5.993 0V22a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V11.543a1.002 1.002 0 0 1 .31-.724l10-9.543a1.001 1.001 0 0 1 1.38 0l10 9.543a1.002 1.002 0 0 1 .31.724V22a1 1 0 0 1-1 1Z"/>
+      <path d="M22 23h-6.001a1 1 0 0 1-1-1v-5.455a2.997 2.997 0 1 0-5.993 0V22a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V11.543a1.002 1.002 0 0 1 .31-.724l10-9.543a1.001 1.001 0 0 1 1.38 0l10 9.543a1.002 1.002 0 0 1 .31.724V22a1 1 0 0 1-1 1Z" />
     </svg>
   ),
   Search: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <path d="M19 10.5A8.5 8.5 0 1 1 10.5 2a8.5 8.5 0 0 1 8.5 8.5Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
-      <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="16.511" x2="22" y1="16.511" y2="22"/>
+      <path d="M19 10.5A8.5 8.5 0 1 1 10.5 2a8.5 8.5 0 0 1 8.5 8.5Z" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
+      <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="16.511" x2="22" y1="16.511" y2="22" />
     </svg>
   ),
   Reels: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <path d="m12.823 1 2.974 5.002h-5.58l-2.65-4.971c.206-.013.419-.022.642-.027L8.55 1Zm2.327 0h.298c3.06 0 4.468.754 5.64 1.887a6.007 6.007 0 0 1 1.596 2.82l.07.295h-4.629L15.15 1Zm-9.667.377L7.95 6.002H1.244a6.01 6.01 0 0 1 3.942-4.53Zm9.735 12.834-4.545-2.624a.909.909 0 0 0-1.356.668l-.008.12v5.248a.91.91 0 0 0 1.255.84l.109-.053 4.545-2.624a.909.909 0 0 0 .1-1.507l-.1-.068-4.545-2.624Zm-14.2-6.209h21.964v12.073a5 5 0 0 1-5 5H6.018a5 5 0 0 1-5-5V8.002Z"/>
+      <path d="m12.823 1 2.974 5.002h-5.58l-2.65-4.971c.206-.013.419-.022.642-.027L8.55 1Zm2.327 0h.298c3.06 0 4.468.754 5.64 1.887a6.007 6.007 0 0 1 1.596 2.82l.07.295h-4.629L15.15 1Zm-9.667.377L7.95 6.002H1.244a6.01 6.01 0 0 1 3.942-4.53Zm9.735 12.834-4.545-2.624a.909.909 0 0 0-1.356.668l-.008.12v5.248a.91.91 0 0 0 1.255.84l.109-.053 4.545-2.624a.909.909 0 0 0 .1-1.507l-.1-.068-4.545-2.624Zm-14.2-6.209h21.964v12.073a5 5 0 0 1-5 5H6.018a5 5 0 0 1-5-5V8.002Z" />
     </svg>
   ),
   Heart: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.052 6.052 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97.283.246.569.494.853.747l1.027.918a44.998 44.998 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45.263 45.263 0 0 0 3.626-3.115l.922-.824c.293-.26.59-.519.885-.774 2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218Z"/>
+      <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938m0-2a6.04 6.04 0 0 0-4.797 2.127 6.052 6.052 0 0 0-4.787-2.127A6.985 6.985 0 0 0 .5 9.122c0 3.61 2.55 5.827 5.015 7.97.283.246.569.494.853.747l1.027.918a44.998 44.998 0 0 0 3.518 3.018 2 2 0 0 0 2.174 0 45.263 45.263 0 0 0 3.626-3.115l.922-.824c.293-.26.59-.519.885-.774 2.334-2.025 4.98-4.32 4.98-7.94a6.985 6.985 0 0 0-6.708-7.218Z" />
     </svg>
   ),
   User: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <circle cx="12.004" cy="12.004" fill="none" r="10.5" stroke="currentColor" strokeLinecap="round" strokeMiterlimit="10" strokeWidth="2"/>
-      <path d="M18.793 20.014a6.08 6.08 0 0 0-1.778-2.447 3.991 3.991 0 0 0-2.386-.791H9.38a3.994 3.994 0 0 0-2.386.791 6.09 6.09 0 0 0-1.779 2.447" fill="none" stroke="currentColor" strokeLinecap="round" strokeMiterlimit="10" strokeWidth="2"/>
-      <circle cx="12.006" cy="9.718" fill="none" r="4.109" stroke="currentColor" strokeLinecap="round" strokeMiterlimit="10" strokeWidth="2"/>
+      <circle cx="12.004" cy="12.004" fill="none" r="10.5" stroke="currentColor" strokeLinecap="round" strokeMiterlimit="10" strokeWidth="2" />
+      <path d="M18.793 20.014a6.08 6.08 0 0 0-1.778-2.447 3.991 3.991 0 0 0-2.386-.791H9.38a3.994 3.994 0 0 0-2.386.791 6.09 6.09 0 0 0-1.779 2.447" fill="none" stroke="currentColor" strokeLinecap="round" strokeMiterlimit="10" strokeWidth="2" />
+      <circle cx="12.006" cy="9.718" fill="none" r="4.109" stroke="currentColor" strokeLinecap="round" strokeMiterlimit="10" strokeWidth="2" />
     </svg>
   ),
   Grid: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <rect fill="none" height="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="10" x="2" y="2"/>
-      <rect fill="none" height="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="10" x="12" y="2"/>
-      <rect fill="none" height="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="10" x="2" y="12"/>
-      <rect fill="none" height="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="10" x="12" y="12"/>
+      <rect fill="none" height="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="10" x="2" y="2" />
+      <rect fill="none" height="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="10" x="12" y="2" />
+      <rect fill="none" height="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="10" x="2" y="12" />
+      <rect fill="none" height="10" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" width="10" x="12" y="12" />
     </svg>
   ),
   Tagged: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <path d="M10.201 3.797 12 1.997l1.799 1.8a1.59 1.59 0 0 0 1.124.465h2.55a1.59 1.59 0 0 1 1.59 1.59v2.55c0 .422.167.826.466 1.124l1.799 1.799-1.799 1.799a1.59 1.59 0 0 0-.466 1.124v2.55a1.59 1.59 0 0 1-1.59 1.59h-2.55a1.59 1.59 0 0 0-1.124.466l-1.799 1.799-1.799-1.799a1.59 1.59 0 0 0-.466-1.124v-2.55a1.59 1.59 0 0 1 1.59-1.59h2.55a1.59 1.59 0 0 0 1.124-.465Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"/>
-      <circle cx="12" cy="12" fill="none" r="3" stroke="currentColor" strokeWidth="2"/>
+      <path d="M10.201 3.797 12 1.997l1.799 1.8a1.59 1.59 0 0 0 1.124.465h2.55a1.59 1.59 0 0 1 1.59 1.59v2.55c0 .422.167.826.466 1.124l1.799 1.799-1.799 1.799a1.59 1.59 0 0 0-.466 1.124v2.55a1.59 1.59 0 0 1-1.59 1.59h-2.55a1.59 1.59 0 0 0-1.124.466l-1.799 1.799-1.799-1.799a1.59 1.59 0 0 0-1.124-.466h-2.55a1.59 1.59 0 0 1-1.59-1.59v-2.55a1.59 1.59 0 0 0-.466-1.124l-1.799-1.799 1.799-1.799a1.59 1.59 0 0 0 .466-1.124v-2.55a1.59 1.59 0 0 1 1.59-1.59h2.55a1.59 1.59 0 0 0 1.124-.465Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" />
+      <circle cx="12" cy="12" fill="none" r="3" stroke="currentColor" strokeWidth="2" />
     </svg>
   ),
   Plus: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.3.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.3.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.7-.8-.7z"/>
+      <path d="M21 11.3h-8.2V3c0-.4-.3-.8-.8-.8s-.8.4-.8.8v8.2H3c-.4 0-.8.3-.8.8s.3.8.8.8h8.2V21c0 .4.3.8.8.8s.8-.3.8-.8v-8.2H21c.4 0 .8-.3.8-.8s-.4-.7-.8-.7z" />
     </svg>
   ),
   Messenger: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <path d="M12.003 2.001a9.705 9.705 0 1 1 0 19.4 10.876 10.876 0 0 1-2.895-.384.798.798 0 0 0-.533.04l-1.984.876a.801.801 0 0 1-1.123-.708l-.054-1.78a.806.806 0 0 0-.27-.569 9.49 9.49 0 0 1-3.14-7.175 9.65 9.65 0 0 1 10-9.7Z" fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="1.739"/>
-      <path d="M17.79 10.132a.659.659 0 0 0-.962-.873l-2.556 2.05a.63.63 0 0 1-.758.002L11.06 9.47a1.576 1.576 0 0 0-2.277.42l-2.567 3.98a.659.659 0 0 0 .961.875l2.556-2.049a.63.63 0 0 1 .759-.002l2.452 1.84a1.576 1.576 0 0 0 2.278-.42Z"/>
+      <path d="M12.003 2.001a9.705 9.705 0 1 1 0 19.4 10.876 10.876 0 0 1-2.895-.384.798.798 0 0 0-.533.04l-1.984.876a.801.801 0 0 1-1.123-.708l-.054-1.78a.806.806 0 0 0-.27-.569 9.49 9.49 0 0 1-3.14-7.175 9.65 9.65 0 0 1 10-9.7Z" fill="none" stroke="currentColor" strokeMiterlimit="10" strokeWidth="1.739" />
+      <path d="M17.79 10.132a.659.659 0 0 0-.962-.873l-2.556 2.05a.63.63 0 0 1-.758.002L11.06 9.47a1.576 1.576 0 0 0-2.277.42l-2.567 3.98a.659.659 0 0 0 .961.875l2.556-2.049a.63.63 0 0 1 .759-.002l2.452 1.84a1.576 1.576 0 0 0 2.278-.42Z" />
     </svg>
   ),
   Verified: () => (
     <svg viewBox="0 0 24 24" width="18" height="18" className="verified-badge">
-      <circle cx="12" cy="12" r="10" fill="#0095f6"/>
-      <path d="M10.5 15.5L7 12l1.4-1.4 2.1 2.1 4.6-4.6L16.5 9.5l-6 6z" fill="#fff"/>
+      <circle cx="12" cy="12" r="10" fill="#0095f6" />
+      <path d="M10.5 15.5L7 12l1.4-1.4 2.1 2.1 4.6-4.6L16.5 9.5l-6 6z" fill="#fff" />
     </svg>
   ),
   Close: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="21" x2="3" y1="3" y2="21"/>
-      <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="21" x2="3" y1="21" y2="3"/>
+      <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="21" x2="3" y1="3" y2="21" />
+      <line fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" x1="21" x2="3" y1="21" y2="3" />
     </svg>
   )
 }
@@ -95,14 +95,14 @@ function Header({ username, onSettingsClick }) {
         <span className="header-username">{username}</span>
         <Icons.Verified />
         <svg className="header-dropdown" fill="currentColor" viewBox="0 0 24 24" width="12" height="12">
-          <path d="M12 17.414 3.293 8.707l1.414-1.414L12 14.586l7.293-7.293 1.414 1.414L12 17.414z"/>
+          <path d="M12 17.414 3.293 8.707l1.414-1.414L12 14.586l7.293-7.293 1.414 1.414L12 17.414z" />
         </svg>
       </div>
       <div className="header-icons">
         <button className="header-settings" onClick={onSettingsClick}>
           <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-            <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm0 8a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z"/>
-            <path d="M12 4V1m0 22v-3M4 12H1m22 0h-3M6.3 6.3 4.2 4.2m15.6 15.6-2.1-2.1M6.3 17.7l-2.1 2.1M19.8 4.2l-2.1 2.1" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2"/>
+            <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6Zm0 8a5 5 0 1 1 0-10 5 5 0 0 1 0 10Z" />
+            <path d="M12 4V1m0 22v-3M4 12H1m22 0h-3M6.3 6.3 4.2 4.2m15.6 15.6-2.1-2.1M6.3 17.7l-2.1 2.1M19.8 4.2l-2.1 2.1" fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="2" />
           </svg>
         </button>
       </div>
@@ -111,10 +111,10 @@ function Header({ username, onSettingsClick }) {
 }
 
 // Highlights 컴포넌트
-function Highlights({ highlights, onHighlightClick }) {
+function Highlights({ highlights, onHighlightClick, onManageClick }) {
   return (
     <div className="stories-container">
-      <div className="story-item">
+      <div className="story-item" onClick={onManageClick}>
         <div className="story-ring new-highlight">
           <div className="new-highlight-plus">+</div>
         </div>
@@ -124,7 +124,7 @@ function Highlights({ highlights, onHighlightClick }) {
         <div
           key={highlight.id}
           className="story-item"
-          onClick={() => onHighlightClick(highlight)}
+          style={{ cursor: 'default' }}
         >
           <div className="story-ring">
             <img className="story-avatar" src={highlight.avatar} alt={highlight.username} />
@@ -281,7 +281,7 @@ function StoryViewer({ story, profile, onClose }) {
               className="story-progress-fill"
               style={{
                 width: index < currentIndex ? '100%' :
-                       index === currentIndex ? `${progress}%` : '0%'
+                  index === currentIndex ? `${progress}%` : '0%'
               }}
             />
           </div>
@@ -574,7 +574,7 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
             }}>
               {liked ? (
                 <svg fill="#ff3040" viewBox="0 0 24 24" width="24" height="24">
-                  <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938Z"/>
+                  <path d="M16.792 3.904A4.989 4.989 0 0 1 21.5 9.122c0 3.072-2.652 4.959-5.197 7.222-2.512 2.243-3.865 3.469-4.303 3.752-.477-.309-2.143-1.823-4.303-3.752C5.141 14.072 2.5 12.167 2.5 9.122a4.989 4.989 0 0 1 4.708-5.218 4.21 4.21 0 0 1 3.675 1.941c.84 1.175.98 1.763 1.12 1.763s.278-.588 1.11-1.766a4.17 4.17 0 0 1 3.679-1.938Z" />
                 </svg>
               ) : (
                 <Icons.Heart />
@@ -582,13 +582,13 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
             </button>
             <button className="post-action" onClick={() => setShowCropAdjust(true)}>
               <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-                <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"/>
+                <path d="M20.656 17.008a9.993 9.993 0 1 0-3.59 3.615L22 22Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </button>
             <button className="post-action" onClick={() => setShowImagePicker(true)}>
               <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-                <line fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" x1="22" x2="9.218" y1="3" y2="10.083"/>
-                <polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"/>
+                <line fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" x1="22" x2="9.218" y1="3" y2="10.083" />
+                <polygon fill="none" points="11.698 20.334 22 3.001 2 3.001 9.218 10.084 11.698 20.334" stroke="currentColor" strokeLinejoin="round" strokeWidth="2" />
               </svg>
             </button>
             <input
@@ -601,7 +601,7 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
           </div>
           <button className="post-action" onClick={() => setShowDeleteConfirm(true)}>
             <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-              <polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"/>
+              <polygon fill="none" points="20 21 12 13.44 4 21 4 3 20 3 20 21" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" />
             </svg>
           </button>
         </div>
@@ -620,85 +620,93 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
         <div className="post-time">{formatTime(post.createdAt)}</div>
       </div>
 
-      {showImagePicker && (
-        <div className="image-picker-modal" onClick={() => setShowImagePicker(false)}>
-          <div className="image-picker-content" onClick={(e) => e.stopPropagation()}>
-            <div className="image-picker-header">
-              <span>이미지 변경</span>
-              <button onClick={() => setShowImagePicker(false)}>
-                <Icons.Close />
-              </button>
-            </div>
-            <div className="image-picker-body">
-              <button className="image-picker-btn" onClick={() => imageInputRef.current?.click()}>
-                <svg fill="currentColor" viewBox="0 0 24 24" width="48" height="48">
-                  <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-8h-5zM5 19l3-4 2 3 3-4 4 5H5z"/>
-                </svg>
-                <span>사진 선택</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showCropAdjust && (
-        <CropAdjustModal
-          imageSrc={images[currentImageIndex]}
-          initialCropY={cropYs[currentImageIndex]}
-          onSave={(cropY) => {
-            onCropUpdate(post.id, cropY, currentImageIndex)
-            setShowCropAdjust(false)
-          }}
-          onClose={() => setShowCropAdjust(false)}
-        />
-      )}
-
-      {showDeleteConfirm && (
-        <div className="delete-confirm-modal" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="delete-confirm-content" onClick={(e) => e.stopPropagation()}>
-            <div className="delete-confirm-header">
-              <span>게시글 삭제</span>
-            </div>
-            <div className="delete-confirm-body">
-              <p>이 게시글을 삭제할까요?</p>
-              <p className="delete-confirm-warning">삭제된 게시글은 복구할 수 없어요.</p>
-            </div>
-            <div className="delete-confirm-actions">
-              <button className="delete-confirm-cancel" onClick={() => setShowDeleteConfirm(false)}>
-                취소
-              </button>
-              <button className="delete-confirm-delete" onClick={() => {
-                onDelete(post.id)
-                setShowDeleteConfirm(false)
-              }}>
-                삭제
-              </button>
+      {
+        showImagePicker && (
+          <div className="image-picker-modal" onClick={() => setShowImagePicker(false)}>
+            <div className="image-picker-content" onClick={(e) => e.stopPropagation()}>
+              <div className="image-picker-header">
+                <span>이미지 변경</span>
+                <button onClick={() => setShowImagePicker(false)}>
+                  <Icons.Close />
+                </button>
+              </div>
+              <div className="image-picker-body">
+                <button className="image-picker-btn" onClick={() => imageInputRef.current?.click()}>
+                  <svg fill="currentColor" viewBox="0 0 24 24" width="48" height="48">
+                    <path d="M19 7v2.99s-1.99.01-2 0V7h-3s.01-1.99 0-2h3V2h2v3h3v2h-3zm-3 4V8h-3V5H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-8h-5zM5 19l3-4 2 3 3-4 4 5H5z" />
+                  </svg>
+                  <span>사진 선택</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {showModeSelect && (
-        <div className="mode-select-modal" onClick={() => { setShowModeSelect(false); setPendingImageData(null); }}>
-          <div className="mode-select-content" onClick={(e) => e.stopPropagation()}>
-            <div className="mode-select-header">
-              <span>이미지 추가 방식</span>
-            </div>
-            <div className="mode-select-body">
-              <p>선택한 이미지를 어떻게 추가할까요?</p>
-            </div>
-            <div className="mode-select-actions">
-              <button className="mode-select-replace" onClick={() => handleModeSelect('replace')}> 
-                전체 교체
-              </button>
-              <button className="mode-select-add" onClick={() => handleModeSelect('add')}> 
-                추가
-              </button>
+      {
+        showCropAdjust && (
+          <CropAdjustModal
+            imageSrc={images[currentImageIndex]}
+            initialCropY={cropYs[currentImageIndex]}
+            onSave={(cropY) => {
+              onCropUpdate(post.id, cropY, currentImageIndex)
+              setShowCropAdjust(false)
+            }}
+            onClose={() => setShowCropAdjust(false)}
+          />
+        )
+      }
+
+      {
+        showDeleteConfirm && (
+          <div className="delete-confirm-modal" onClick={() => setShowDeleteConfirm(false)}>
+            <div className="delete-confirm-content" onClick={(e) => e.stopPropagation()}>
+              <div className="delete-confirm-header">
+                <span>게시글 삭제</span>
+              </div>
+              <div className="delete-confirm-body">
+                <p>이 게시글을 삭제할까요?</p>
+                <p className="delete-confirm-warning">삭제된 게시글은 복구할 수 없어요.</p>
+              </div>
+              <div className="delete-confirm-actions">
+                <button className="delete-confirm-cancel" onClick={() => setShowDeleteConfirm(false)}>
+                  취소
+                </button>
+                <button className="delete-confirm-delete" onClick={() => {
+                  onDelete(post.id)
+                  setShowDeleteConfirm(false)
+                }}>
+                  삭제
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+
+      {
+        showModeSelect && (
+          <div className="mode-select-modal" onClick={() => { setShowModeSelect(false); setPendingImageData(null); }}>
+            <div className="mode-select-content" onClick={(e) => e.stopPropagation()}>
+              <div className="mode-select-header">
+                <span>이미지 추가 방식</span>
+              </div>
+              <div className="mode-select-body">
+                <p>선택한 이미지를 어떻게 추가할까요?</p>
+              </div>
+              <div className="mode-select-actions">
+                <button className="mode-select-replace" onClick={() => handleModeSelect('replace')}> 
+                  전체 교체
+                </button>
+                <button className="mode-select-add" onClick={() => handleModeSelect('add')}> 
+                  추가
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+    </div >
   )
 }
 
@@ -864,11 +872,11 @@ function Settings({ profile, onClose, onProfileUpdate }) {
       <div className="settings-header">
         <button className="settings-back" onClick={onClose}>
           <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-            <path d="M21 11H6.414l5.293-5.293-1.414-1.414L2.586 12l7.707 7.707 1.414-1.414L6.414 13H21v-2z"/>
+            <path d="M21 11H6.414l5.293-5.293-1.414-1.414L2.586 12l7.707 7.707 1.414-1.414L6.414 13H21v-2z" />
           </svg>
         </button>
         <span className="settings-title">설정</span>
-        <div style={{width: 24}} />
+        <div style={{ width: 24 }} />
       </div>
 
       <div className="settings-content">
@@ -905,13 +913,178 @@ function Settings({ profile, onClose, onProfileUpdate }) {
   )
 }
 
+// Manage Highlights Modal 컴포넌트
+function ManageHighlightsModal({ highlights, onUpdate, onClose }) {
+  const [items, setItems] = useState(highlights)
+  const [editingId, setEditingId] = useState(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editImage, setEditImage] = useState(null)
+  const [cropImage, setCropImage] = useState(null) // For crop
+  const fileInputRef = useRef(null)
+
+  const handleSave = () => {
+    onUpdate(items)
+    onClose()
+  }
+
+  const handleDelete = (id) => {
+    if (confirm('이 하이라이트를 삭제할까요?')) {
+      setItems(prev => prev.filter(item => item.id !== id))
+    }
+  }
+
+  const startEdit = (item) => {
+    setEditingId(item.id)
+    setEditTitle(item.title)
+    setEditImage(item.avatar)
+  }
+
+  const startAdd = () => {
+    setEditingId('new')
+    setEditTitle('')
+    setEditImage(null)
+  }
+
+  const handleImageSelect = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setCropImage(reader.result)
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handleCropComplete = (croppedImage) => {
+    setEditImage(croppedImage)
+    setCropImage(null)
+  }
+
+  const saveItem = () => {
+    if (!editTitle) return alert('이름을 입력해주세요.')
+    
+    if (editingId === 'new') {
+      const newItem = {
+        id: Date.now(),
+        title: editTitle,
+        avatar: editImage || 'https://via.placeholder.com/100',
+        images: []
+      }
+      setItems(prev => [...prev, newItem])
+    } else {
+      setItems(prev => prev.map(item => 
+        item.id === editingId 
+          ? { ...item, title: editTitle, avatar: editImage || item.avatar }
+          : item
+      ))
+    }
+    setEditingId(null)
+  }
+
+  if (cropImage) {
+    return (
+      <ImageCropper
+        imageSrc={cropImage}
+        onCrop={handleCropComplete}
+        onCancel={() => setCropImage(null)}
+      />
+    )
+  }
+
+  return (
+    <div className="settings-modal">
+      <div className="settings-header">
+         {editingId ? (
+           <button className="settings-back" onClick={() => setEditingId(null)}>
+             <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
+                <path d="M21 11H6.414l5.293-5.293-1.414-1.414L2.586 12l7.707 7.707 1.414-1.414L6.414 13H21v-2z" />
+             </svg>
+           </button>
+         ) : (
+           <button className="settings-back" onClick={onClose}>
+             <Icons.Close />
+           </button>
+         )}
+         <span className="settings-title">{editingId ? (editingId === 'new' ? '새 하이라이트' : '하이라이트 수정') : '하이라이트 관리'}</span>
+         {!editingId && <button className="settings-save" onClick={handleSave} style={{color:'#0095f6', fontWeight:'600', border:'none', background:'none'}}>완료</button>}
+      </div>
+
+      <div className="settings-content">
+        {editingId ? (
+           <div className="settings-section">
+             <div className="settings-avatar-section" onClick={() => fileInputRef.current?.click()}>
+               <div className="story-ring" style={{width: 80, height: 80, margin: '0 auto'}}>
+                 {editImage ? (
+                   <img className="story-avatar" src={editImage} alt="Preview" />
+                 ) : (
+                   <div style={{width:'100%', height:'100%', background:'#333', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                     <Icons.Plus />
+                   </div>
+                 )}
+               </div>
+               <span className="settings-avatar-edit" style={{marginTop: 10}}>커버 사진 변경</span>
+               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} style={{display:'none'}} />
+             </div>
+             <div className="settings-item">
+               <span className="settings-label">이름</span>
+               <input 
+                 type="text" 
+                 value={editTitle} 
+                 onChange={e => setEditTitle(e.target.value)}
+                 placeholder="하이라이트 이름"
+                 style={{background:'transparent', border:'none', color:'white', textAlign:'right', outline:'none', fontSize: 16}}
+               />
+             </div>
+             <button onClick={saveItem} className="btn btn-primary" style={{width:'100%', marginTop: 20}}>
+               {editingId === 'new' ? '추가' : '수정 완료'}
+             </button>
+           </div>
+        ) : (
+           <div className="highlight-list" style={{display:'flex', flexDirection:'column', width:'100%'}}>
+             <button className="highlight-add-row" onClick={startAdd} style={{display:'flex', alignItems:'center', padding:'15px', width:'100%', background:'none', border:'none', borderBottom:'1px solid #262626', color:'white', cursor:'pointer'}}>
+               <div className="story-ring new-highlight" style={{width: 50, height: 50, marginRight: 15}}>
+                 <div className="new-highlight-plus">+</div>
+               </div>
+               <span style={{fontSize: 16}}>새로 만들기</span>
+             </button>
+             
+             {items.map(item => (
+               <div key={item.id} className="highlight-row" style={{display:'flex', alignItems:'center', padding:'15px', borderBottom:'1px solid #262626'}}>
+                 <div className="story-ring" style={{width: 50, height: 50, marginRight: 15}}>
+                   <img className="story-avatar" src={item.avatar} alt={item.title} />
+                 </div>
+                 <span style={{flex: 1, fontSize: 16, fontWeight: 600, textAlign:'left'}}>{item.title}</span>
+                 <button onClick={() => startEdit(item)} style={{marginRight: 10, background:'none', border:'none', color:'#fff', cursor:'pointer'}}>
+                   수정
+                 </button>
+                 <button onClick={() => handleDelete(item.id)} style={{background:'none', border:'none', color:'#ff3040', cursor:'pointer'}}>
+                   삭제
+                 </button>
+               </div>
+             ))}
+           </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // Main App
 function App() {
   const [posts, setPosts] = useState([])
-  const [activeTab, setActiveTab] = useState('reels')  // 기본 탭을 릴스로
+  const [activeTab, setActiveTab] = useState('reels')
   const [selectedHighlight, setSelectedHighlight] = useState(null)
   const [selectedPostId, setSelectedPostId] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
+  
+  // 하이라이트 상태 관리
+  const [highlights, setHighlights] = useState(() => {
+    const saved = localStorage.getItem('ara-highlights')
+    return saved ? JSON.parse(saved) : DEFAULT_HIGHLIGHTS
+  })
+  const [showManageHighlights, setShowManageHighlights] = useState(false)
+
   const [profile, setProfile] = useState(() => {
     const saved = localStorage.getItem('ara-profile')
     if (saved) {
@@ -945,18 +1118,20 @@ function App() {
     setProfile(newProfile)
     localStorage.setItem('ara-profile', JSON.stringify(newProfile))
   }
+  
+  const handleHighlightsUpdate = (newHighlights) => {
+    setHighlights(newHighlights)
+    localStorage.setItem('ara-highlights', JSON.stringify(newHighlights))
+  }
 
   const handleImageUpdate = async (postId, newImageData, mode = 'replace') => {
     try {
-      // Electron의 IPC를 통해 이미지 저장
       if (window.electronAPI?.savePostImage) {
         const result = await window.electronAPI.savePostImage(postId, newImageData, mode)
         if (result.success) {
-          // posts 새로고침
           fetchPosts()
         }
       } else {
-        // 웹 환경에서는 로컬 상태만 업데이트
         setPosts(prev => prev.map(p => {
           if (p.id !== postId) return p
           const images = p.images || (p.image ? [p.image] : [])
@@ -980,7 +1155,6 @@ function App() {
           fetchPosts()
         }
       } else {
-        // 웹 환경에서는 로컬 상태만 업데이트
         setPosts(prev => prev.map(p => p.id === postId ? { ...p, liked: !p.liked } : p))
       }
     } catch (e) {
@@ -996,7 +1170,6 @@ function App() {
           fetchPosts()
         }
       } else {
-        // 웹 환경에서는 로컬 상태만 업데이트
         setPosts(prev => prev.map(p => {
           if (p.id !== postId) return p
           const images = p.images || (p.image ? [p.image] : [])
@@ -1020,7 +1193,6 @@ function App() {
           fetchPosts()
         }
       } else {
-        // 웹 환경에서는 로컬 상태만 업데이트
         setPosts(prev => prev.filter(p => p.id !== postId))
         setSelectedPostId(null)
       }
@@ -1029,10 +1201,9 @@ function App() {
     }
   }
 
-  // 탭에 따른 게시글 필터링
   const displayedPosts = activeTab === 'posts'
-    ? posts.filter(p => p.liked)  // 이미지탭: 좋아요한 게시글만
-    : posts                        // 릴스탭: 전체 게시글
+    ? posts.filter(p => p.liked)
+    : posts
 
   return (
     <div className="app">
@@ -1041,11 +1212,12 @@ function App() {
         onSettingsClick={() => setShowSettings(true)}
       />
 
-      <ProfileHeader profile={{...profile, posts: posts.length}} />
+      <ProfileHeader profile={{ ...profile, posts: posts.length }} />
 
       <Highlights
-        highlights={HIGHLIGHTS}
+        highlights={highlights}
         onHighlightClick={setSelectedHighlight}
+        onManageClick={() => setShowManageHighlights(true)}
       />
 
       <TabBar activeTab={activeTab} onTabChange={setActiveTab} />
@@ -1082,6 +1254,14 @@ function App() {
           profile={profile}
           onClose={() => setShowSettings(false)}
           onProfileUpdate={handleProfileUpdate}
+        />
+      )}
+
+      {showManageHighlights && (
+        <ManageHighlightsModal
+          highlights={highlights}
+          onUpdate={handleHighlightsUpdate}
+          onClose={() => setShowManageHighlights(false)}
         />
       )}
     </div>
