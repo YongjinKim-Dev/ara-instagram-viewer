@@ -58,7 +58,7 @@ const Icons = {
   ),
   Tagged: () => (
     <svg fill="currentColor" viewBox="0 0 24 24" width="24" height="24">
-      <path d="M10.201 3.797 12 1.997l1.799 1.8a1.59 1.59 0 0 0 1.124.465h2.55a1.59 1.59 0 0 1 1.59 1.59v2.55c0 .422.167.826.466 1.124l1.799 1.799-1.799 1.799a1.59 1.59 0 0 0-.466 1.124v2.55a1.59 1.59 0 0 1-1.59 1.59h-2.55a1.59 1.59 0 0 0-1.124.466l-1.799 1.799-1.799-1.799a1.59 1.59 0 0 0-1.124-.466h-2.55a1.59 1.59 0 0 1-1.59-1.59v-2.55a1.59 1.59 0 0 0-.466-1.124l-1.799-1.799 1.799-1.799a1.59 1.59 0 0 0 .466-1.124v-2.55a1.59 1.59 0 0 1 1.59-1.59h2.55a1.59 1.59 0 0 0 1.124-.465Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"/>
+      <path d="M10.201 3.797 12 1.997l1.799 1.8a1.59 1.59 0 0 0 1.124.465h2.55a1.59 1.59 0 0 1 1.59 1.59v2.55c0 .422.167.826.466 1.124l1.799 1.799-1.799 1.799a1.59 1.59 0 0 0-.466 1.124v2.55a1.59 1.59 0 0 1-1.59 1.59h-2.55a1.59 1.59 0 0 0-1.124.466l-1.799 1.799-1.799-1.799a1.59 1.59 0 0 0-.466-1.124v-2.55a1.59 1.59 0 0 1 1.59-1.59h2.55a1.59 1.59 0 0 0 1.124-.465Z" fill="none" stroke="currentColor" strokeLinejoin="round" strokeWidth="2"/>
       <circle cx="12" cy="12" fill="none" r="3" stroke="currentColor" strokeWidth="2"/>
     </svg>
   ),
@@ -688,10 +688,10 @@ function PostDetail({ post, profile, onClose, onImageUpdate, onLikeToggle, onCro
               <p>선택한 이미지를 어떻게 추가할까요?</p>
             </div>
             <div className="mode-select-actions">
-              <button className="mode-select-replace" onClick={() => handleModeSelect('replace')}>
+              <button className="mode-select-replace" onClick={() => handleModeSelect('replace')}> 
                 전체 교체
               </button>
-              <button className="mode-select-add" onClick={() => handleModeSelect('add')}>
+              <button className="mode-select-add" onClick={() => handleModeSelect('add')}> 
                 추가
               </button>
             </div>
